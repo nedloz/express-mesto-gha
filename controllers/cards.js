@@ -76,7 +76,7 @@ const deleteLike = (req, res) => {
         res.send({ message: 'Карточка удалена' });
         return;
       }
-      res.status(BAD_REQUEST).send({ message: 'Карточка с указанным _id не найдена' });
+      res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
