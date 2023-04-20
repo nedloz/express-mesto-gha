@@ -73,10 +73,10 @@ const deleteLike = (req, res) => {
   )
     .then((card) => {
       if (card) {
-        res.send({ data: card });
+        res.send({ message: 'Карточка удалена' });
         return;
       }
-      res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
+      res.status(BAD_REQUEST).send({ message: 'Карточка с указанным _id не найдена' });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
