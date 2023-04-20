@@ -13,7 +13,7 @@ try {
 }
 const app = express();
 
-const { PORT = 3000, BASE_PATH } = process.env;
+const { PORT = 3000 } = process.env;
 
 app.use(express.json());
 app.use((req, res, next) => {
