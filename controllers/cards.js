@@ -45,14 +45,20 @@ const putLike = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true, runValidators: true },
   )
-    .then((card) => res.send({ data: card }))
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+        return;
+      }
+      res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Переданны некорректные данные' });
         return;
       }
       if (err.name === 'CastError') {
-        res.status(NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
+        res.status(BAD_REQUEST).send({ message: 'Карточка с указанным _id не найдена' });
         return;
       }
       res.status(SERVER_ERROR).send({ message: `Произошла ошибка: ${err}` });
@@ -65,14 +71,20 @@ const deleteLike = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true, runValidators: true },
   )
-    .then((card) => res.send({ data: card }))
+    .then((card) => {
+      if (card) {
+        res.send({ data: card });
+        return;
+      }
+      res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Переданны некорректные данные' });
         return;
       }
       if (err.name === 'CastError') {
-        res.status(NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
+        res.status(BAD_REQUEST).send({ message: 'Карточка с указанным _id не найдена' });
         return;
       }
       res.status(SERVER_ERROR).send({ message: `Произошла ошибка: ${err}` });
