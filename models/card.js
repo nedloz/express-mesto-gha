@@ -4,8 +4,8 @@ const cardSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    minLenght: 2,
-    maxLenght: 30,
+    minlength: 2,
+    maxlength: 30,
   },
   link: {
     type: String,
@@ -24,6 +24,6 @@ const cardSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+}, { versionKey: false });
 
 module.exports = mongoose.model('card', cardSchema);
