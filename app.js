@@ -1,20 +1,30 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const http2 = require('node:http2');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+
+const { NOT_FOUND } = require('./utils/constants');
 const usersRouter = require('./routes/users');
 const cardsrouter = require('./routes/cards');
 
-const NOT_FOUND = http2.constants.HTTP_STATUS_NOT_FOUND;
+const app = express();
+const { PORT = 3000 } = process.env;
 
 try {
   mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 } catch (err) {
   process.exit();
 }
-const app = express();
 
-const { PORT = 3000 } = process.env;
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
+app.use(helmet());
+app.use(limiter);
 app.use(express.json());
 app.use((req, res, next) => {
   req.user = {
