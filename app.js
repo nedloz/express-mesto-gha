@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const { celebrate, Joi } = require('celebrate');
 
 const { NOT_FOUND } = require('./utils/constants');
 const usersRouter = require('./routes/users');
@@ -33,7 +34,16 @@ app.use((req, res, next) => {
   };
   next();
 });
-app.use('/signup', createUser);
+
+app.use('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string(),
+  }),
+}), createUser);
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsrouter);
