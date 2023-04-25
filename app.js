@@ -4,10 +4,11 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 
-const { NOT_FOUND } = require('./utils/constants');
+const NotFoundError = require('./errors/NotFoundError');
 const usersRouter = require('./routes/users');
 const cardsrouter = require('./routes/cards');
-const { createUser } = require('./controllers/users');
+const { createUser, login } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -28,27 +29,26 @@ const limiter = rateLimit({
 app.use(helmet());
 app.use(limiter);
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: '644109eaff4da83227c518ac',
-  };
-  next();
-});
 
+app.use('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), login);
 app.use('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().uri({ scheme: ['http', 'https'] }),
   }),
 }), createUser);
 app.use(errors());
-
-app.use('/users', usersRouter);
-app.use('/cards', cardsrouter);
-app.use('*', (req, res) => res.status(NOT_FOUND).send({ message: 'Такого пути не существует' }));
+app.use('/users', auth, usersRouter);
+app.use('/cards', auth, cardsrouter);
+app.use('*', (req, res, next) => next(new NotFoundError('Такого пути не существует')));
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
