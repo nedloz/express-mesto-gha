@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const { NOT_FOUND } = require('./utils/constants');
 const usersRouter = require('./routes/users');
 const cardsrouter = require('./routes/cards');
+const { createUser } = require('./controllers/users');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -32,8 +33,17 @@ app.use((req, res, next) => {
   };
   next();
 });
+app.use('/signup', createUser);
+
 app.use('/users', usersRouter);
 app.use('/cards', cardsrouter);
 app.use('*', (req, res) => res.status(NOT_FOUND).send({ message: 'Такого пути не существует' }));
 
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  const { statusCode, message } = err;
+  res
+    .status(statusCode)
+    .send({ message });
+});
 app.listen(PORT);

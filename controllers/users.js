@@ -1,92 +1,92 @@
-const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  SERVER_ERROR,
-} = require('../utils/constants');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
 const Users = require('../models/user');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   Users.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' }));
+    .catch(next);
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   Users.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND).send({ message: 'Пользователь по указанному _id не найден' });
-        return;
+        next(new NotFoundError('Пользователь по указанному _id не найден'));
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Передан некорректный _id' });
-        return;
+        next(new BadRequestError('Передан некорректный _id'));
       }
-      res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
+      next();
     });
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  Users.create({ name, about, avatar })
+const createUser = (req, res, next) => {
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+  Users.create({
+    email, password, name, about, avatar,
+  })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданны некорректные данные' });
-        return;
+        next(new BadRequestError('Переданны некорректные данные'));
       }
-      res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
+      next();
     });
 };
 
-const updateUserInfo = (req, res) => {
+const updateUserInfo = (req, res, next) => {
   const newUser = req.body;
   Users.findByIdAndUpdate(req.user._id, newUser, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
-        return;
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданны некорректные данные' });
-        return;
+        next(new BadRequestError('Переданны некорректные данные'));
       }
       if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Передан некорректный _id пользователя' });
-        return;
+        next(new BadRequestError('Передан некорректный _id пользователя'));
       }
-      res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
+      next();
     });
 };
 
-const updateUserAvatar = (req, res) => {
+const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   Users.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
-        return;
+        next(new NotFoundError('Запрашиваемый пользователь не найден'));
       }
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданны некорректные данные' });
-        return;
+        next(new BadRequestError('Переданны некорректные данные'));
       }
       if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({ message: 'Передан некорректный _id пользователя' });
-        return;
+        next(new BadRequestError('Передан некорректный _id пользователя'));
       }
-      res.status(SERVER_ERROR).send({ message: 'Ошибка сервера' });
+      next();
     });
 };
+
+// const login = (req, res, next) => {
+//   const { email, password } = req.body;
+//   if (!validator.isEmail(email)) {
+//     next();
+//   }
+
+// };
 
 module.exports = {
   getUsers,
@@ -94,4 +94,5 @@ module.exports = {
   getUser,
   updateUserInfo,
   updateUserAvatar,
+  // login,
 };
