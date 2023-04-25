@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 
 const { NOT_FOUND } = require('./utils/constants');
 const usersRouter = require('./routes/users');
@@ -44,6 +44,7 @@ app.use('/signup', celebrate({
     avatar: Joi.string(),
   }),
 }), createUser);
+app.use(errors());
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsrouter);
