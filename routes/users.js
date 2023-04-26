@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { celebrate, Joi, errors } = require('celebrate');
+
 const {
   getUsers,
   getUser,
@@ -9,9 +11,24 @@ const {
 
 router.get('/', getUsers);
 router.get('/me', getMe);
-router.get('/:userId', getUser);
-router.patch('/me', updateUserInfo);
-router.patch('/me/avatar', updateUserAvatar);
+router.get('/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().required().alphanum().length(24),
+  }),
+}), getUser);
+
+router.patch('/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().uri({ scheme: ['http', 'https'] }),
+  }),
+}), updateUserInfo);
+router.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().required().uri({ scheme: ['http', 'https'] }),
+  }),
+}), updateUserAvatar);
 router.use((req, res, err) => {
   const { statusCode = 500, message } = err;
   res
@@ -22,4 +39,5 @@ router.use((req, res, err) => {
         : message,
     });
 });
+router.use(errors());
 module.exports = router;

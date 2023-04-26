@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { celebrate, Joi, errors } = require('celebrate');
+
 const {
   getCards,
   createCard,
@@ -8,14 +10,37 @@ const {
 } = require('../controllers/cards');
 
 router.get('/', getCards);
-router.post('/', createCard);
-router.delete('/:cardId', deleteCard);
-router.put('/:cardId/likes', putLike);
-router.delete('/:cardId/likes', deleteLike);
-router.use((req, res, err) => {
+router.post('/', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30).required(),
+    link: Joi.string().uri({ scheme: ['http', 'https'] }).required(),
+  }),
+}), createCard);
+
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required().alphanum().length(24),
+  }),
+}), deleteCard);
+
+router.put('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required().alphanum().length(24),
+  }),
+}), putLike);
+
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().required().alphanum().length(24),
+  }),
+}), deleteLike);
+router.use(errors());
+
+// eslint-disable-next-line no-unused-vars
+router.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   res
-    .status(statusCode)
+    .status(statusCode || 500)
     .send({
       message: statusCode === 500
         ? 'На сервере произошла ошибка'

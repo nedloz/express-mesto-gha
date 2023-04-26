@@ -1,6 +1,8 @@
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
-const UnAuthorizedError = require('../errors/UnAuthorizedError');
+// const UnAuthorizedError = require('../errors/UnAuthorizedError');
+// const ConflictError = require('../errors/ConflictError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const Cards = require('../models/card');
 
@@ -26,33 +28,15 @@ const createCard = (req, res, next) => {
 
 const deleteCard = (req, res, next) => {
   Cards.findById(req.params.cardId)
+    .orFail(() => new NotFoundError('Карточка с указанным _id не найдена'))
     .then((card) => {
-      if (!card) {
-        next(new NotFoundError('Карточка с указанным _id не найдена'));
-        return;
+      if (!card.owner.equals(req.user._id)) {
+        return next(new ForbiddenError('Нельзя удалить чужую карточку'));
       }
-      if (card.owner !== req.user._id) {
-        next(new UnAuthorizedError('Вы не можете удалять карточки других пользователей'));
-      }
+      return card.deleteOne(card)
+        .then(() => res.send({ data: card }));
     })
-    .then(() => {
-      Cards.findByIdAndRemove(req.params.cardId)
-        .then((card) => {
-          if (!card) {
-            next(new NotFoundError('Карточка с указанным _id не найдена'));
-            return;
-          }
-          res.send({ message: 'Карточка удалена' });
-        })
-        .catch((err) => {
-          if (err.name === 'CastError') {
-            next(new BadRequestError('Передан некорректный _id карточки'));
-            return;
-          }
-          next();
-        });
-    })
-    .catch(next());
+    .catch(next);
 };
 
 const putLike = (req, res, next) => {
