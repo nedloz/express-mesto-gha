@@ -20,7 +20,7 @@ const createCard = (req, res, next) => {
         next(new BadRequestError('Переданны некорректные данные'));
         return;
       }
-      next();
+      next(err);
     });
 };
 
@@ -55,7 +55,7 @@ const putLike = (req, res, next) => {
         next(new BadRequestError('Передан некорректный _id карточки'));
         return;
       }
-      next();
+      next(err);
     });
 };
 
@@ -77,7 +77,7 @@ const deleteLike = (req, res, next) => {
         next(new BadRequestError('Передан некорректный _id карточки'));
         return;
       }
-      next();
+      next(err);
     });
 };
 

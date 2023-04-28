@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const { linkSchema } = require('../utils/constants');
+
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -12,7 +14,7 @@ const cardSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator(v) {
-        return /\b(http|https):\/\/(www\.)?(.{1,}\.\w{1,})(.{1,}\/?)*/gi.test(v);
+        return linkSchema.test(v);
       },
     },
   },

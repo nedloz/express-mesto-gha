@@ -25,7 +25,7 @@ const getUser = (req, res, next) => {
         next(new BadRequestError('Передан некорректный _id'));
         return;
       }
-      next();
+      next(err);
     });
 };
 
@@ -52,7 +52,7 @@ const createUser = (req, res, next) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с данной почтой уже существует'));
       }
-      next();
+      next(err);
     });
 };
 
@@ -75,7 +75,7 @@ const updateUserInfo = (req, res, next) => {
         next(new BadRequestError('Передан некорректный _id пользователя'));
         return;
       }
-      next();
+      next(err);
     });
 };
 
@@ -98,7 +98,7 @@ const updateUserAvatar = (req, res, next) => {
         next(new BadRequestError('Передан некорректный _id пользователя'));
         return;
       }
-      next();
+      next(err);
     });
 };
 
